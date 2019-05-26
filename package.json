@@ -1,0 +1,26 @@
+{
+  "name": "kaapora-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently 'cd view && npm start' 'DEV=true electron .'",
+    "build": "electron-packager . Kaapora --platform=darwin --arch=x64 --version=0.36.0 --icon=Icon.icns",
+    "start": "cd view && npm run build && cd .. && electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dat-shared-files-graphql": "^1.0.0",
+    "menubar": "^5.2.3",
+    "open-app-graphql-server": "^2.0.0",
+    "patchql-graphql": "^1.0.0",
+    "ssb-gossip-graphql": "^1.0.0",
+    "ssb-replication-graphql": "^1.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0"
+  }
+}
