@@ -7,6 +7,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Network from '../Network'
+import MediaList from '../MediaList'
 
 const AntTabs = withStyles({
   root: {
@@ -66,16 +67,17 @@ export default function Layout(props) {
         <Toolbar>
           {/* <CameraIcon className={classes.icon} /> */}
           <Typography variant="h6" color="inherit" noWrap>
-            Open App Ecosystem
+            {process.env.TITLE || 'Kaapora'}
           </Typography>
         </Toolbar>
       </AppBar>
       <AntTabs value={value} onChange={handleChange} variant="fullWidth">
-        <AntTab label="Apps" />
+        <AntTab label="Posts" />
         <AntTab label="Network" />
       </AntTabs>
       <main>
-        {(value === 0) ? <div></div> : <Network {...props} />}
+      <MediaList {...props} hidden={value === 1} />
+       <Network {...props} hidden={value === 0} />
       </main>
     </React.Fragment>
   );
