@@ -15,7 +15,7 @@
   "dependencies": {
     "dat-shared-files-graphql": "^1.0.0",
     "menubar": "^5.2.3",
-    "open-app-graphql-server": "^2.0.0",
+    "open-app-graphql-server": "^2.0.1",
     "patchql-graphql": "^1.0.0",
     "ssb-gossip-graphql": "^1.0.0",
     "ssb-replication-graphql": "^1.0.1"
