@@ -5,7 +5,10 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import ButtonBase from '@material-ui/core/ButtonBase'
+import Button from '@material-ui/core/Button'
 import md from 'ssb-markdown'
+import TimeAgo from 'react-timeago'
+import Reply from '../Reply'
 
 const styles = theme => ({
   root: {
@@ -14,8 +17,8 @@ const styles = theme => ({
   },
   paper: {
     padding: theme.spacing(2),
-    margin: '15px auto',
-    maxWidth: 500,
+    margin: '25px auto 0',
+    maxWidth: 968,
   },
   image: {
     width: 200,
@@ -28,9 +31,22 @@ const styles = theme => ({
     height: 50,
     borderRadius: 50,
   },
+  content: {
+    maxWidth: '100%',
+    textAlign: 'left',
+    margin: 'auto',
+  },
 })
 
+const opts = {
+  toUrl: ref => `http://localhost:26835/${ref}`,
+  toImage: ref => `http://localhost:26835/${ref}`,
+  // emoji: emojiAsMarkup => renderEmoji(emojiAsMarkup)
+}
+
+
 function Media({
+  replies,
   classes,
   id,
   author: {
@@ -45,11 +61,8 @@ function Media({
   assertedTimestamp,
   forks,
 }) {
-  // const [mediaList, updateList] = React.useState([
-  //   { id: '0'},
-  //   { id: '1'},
-  //   { id: '2'},
-  // ])
+  const [showMore, toggleShowMore] = React.useState(null)
+  const lastReply = replies[replies.length - 1]
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -57,35 +70,24 @@ function Media({
           <Grid item>
             <ButtonBase className={classes.image}>
               <img className={classes.img} alt="complex" src={`http://localhost:26835/${imageLink}`} />
-              <p>{name}</p>
-              <p>{new Date(assertedTimestamp).toLocaleTimeString()}</p>
+              <Typography gutterBottom variant="subtitle1">{name}</Typography>
+              <TimeAgo date={assertedTimestamp} />
             </ButtonBase>
           </Grid>
-          <Grid item xs={12} sm container>
-            <Grid item xs container direction="column" spacing={2}>
-              <Grid item xs>
-                <Typography gutterBottom variant="subtitle1">
-                  
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  {likesCount} Likes
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                <div dangerouslySetInnerHTML={{__html: md(text) }} >
-                </div>
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body2" style={{ cursor: 'pointer' }}>
-                  Remove
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid item>
-              <Typography variant="subtitle1">{likesCount} Likes</Typography>
-            </Grid>
-          </Grid>
+          <div dangerouslySetInnerHTML={{__html: md.block(text, opts) }} className={classes.content}></div>
         </Grid>
+        {showMore && <div>
+          {replies.map(reply => <Reply key={reply.id} classes={classes} {...reply} />)}
+          <Button variant="contained" color="primary" className={classes.button} onClick={() => toggleShowMore(false)}>
+            Hide comments
+          </Button>
+        </div>}
+        {(lastReply && !showMore) && <div>
+          <Reply key={lastReply.id} classes={classes} {...lastReply} />
+          {replies.length > 1 && <Button variant="contained" color="primary" className={classes.button} onClick={() => toggleShowMore(true)}>
+            Show other {replies.length -1 } comments
+          </Button>}
+        </div>}
       </Paper>
     </div>
   )

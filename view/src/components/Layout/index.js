@@ -5,7 +5,9 @@ import Tab from '@material-ui/core/Tab';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { withStyles } from '@material-ui/core/styles';
+// import throttle from 'lodash.throttle'
 import Network from '../Network'
 import MediaList from '../MediaList'
 
@@ -54,6 +56,24 @@ const AntTab = withStyles(theme => ({
 export default function Layout(props) {
   // const classes = useStyles();
   const [value, setValue] = React.useState(0);
+  // 
+  const [indexing, updateProcess] = React.useState({ loading: true });
+  React.useEffect(() => {
+    // console.log('process', indexing)
+    return () => {
+      if (indexing.loading === true) {
+        props.process({ variables: { chunkSize: 10e3 }})
+        .then(i => {
+          if (indexing.latestSequence !== i.data.process.latestSequence) {
+            updateProcess(Object.assign(i.data.process, { loading: true }))
+          } else {
+            updateProcess(Object.assign(i.data.process, { loading: false }))
+          }
+        })
+        .catch(err => console.log('error on process', err))
+      }
+    };
+  })
 
   function handleChange(event, newValue) {
     setValue(newValue);
@@ -63,6 +83,7 @@ export default function Layout(props) {
   return (
     <React.Fragment>
       <CssBaseline />
+      <LinearProgress value={indexing.loading ? null : 100 } variant={indexing.loading ? 'indeterminate' : 'determinate'} />
       <AppBar position="relative">
         <Toolbar>
           {/* <CameraIcon className={classes.icon} /> */}
