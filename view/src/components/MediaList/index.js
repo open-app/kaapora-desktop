@@ -4,8 +4,11 @@ import { Query } from 'react-apollo'
 import gql from 'graphql-tag'
 import { withStyles } from '@material-ui/core/styles'
 import useWindowScrollPosition from '@rehooks/window-scroll-position'
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Media from '../Media'
+import Fab from '@material-ui/core/Fab'
+import AddIcon from '@material-ui/icons/Add'
+import CreatePost from '../CreatePost'
 
 const options = {
   throttle: 100,
@@ -29,6 +32,7 @@ const THREADS = gql`
             }
             text
             assertedTimestamp
+            likesCount
           }
           root {
             id
@@ -83,6 +87,11 @@ const styles = theme => ({
     maxWidth: '100%',
     maxHeight: '100%',
   },
+  fab: {
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+  },
 })
 
 function List({ data, fetchMore, updateList, mediaList, loading, toggleLoading }) {
@@ -122,10 +131,20 @@ function MediaList({ hidden, classes }) {
   function toggleLoading(value) {
     return updateLoading(value)
   }
+  const [open, setOpen] = React.useState(false)
+  function handleOpen() {
+    setOpen(true)
+  }
+
+  const handleClose = value => {
+    setOpen(false)
+  }
+
+
 
   return (
-    <Query query={THREADS} variables={{ first: 3 }}>
-      {({ data: threadsData, loading: threadsLoading, error: threadsError, fetchMore }) => (
+    <Query query={THREADS}>
+      {({ data: threadsData, loading: threadsLoading, error: threadsError, fetchMore, refetch }) => (
         <div style={{ display: hidden ? 'none' : 'block' }}>
           {(threadsData && threadsData.threads) && <List
             fetchMore={fetchMore}
@@ -135,6 +154,13 @@ function MediaList({ hidden, classes }) {
             loading={loading}
             toggleLoading={toggleLoading}
           />}
+          <Fab color="primary" aria-label="Add" className={classes.fab} onClick={handleOpen}>
+            <AddIcon />
+          </Fab>
+          <CreatePost
+            open={open}
+            handleClose={handleClose}
+          />
         </div>
       )}
     </Query>

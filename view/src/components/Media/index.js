@@ -6,6 +6,7 @@ import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import ButtonBase from '@material-ui/core/ButtonBase'
 import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
 import md from 'ssb-markdown'
 import TimeAgo from 'react-timeago'
 import Reply from '../Reply'
@@ -63,15 +64,23 @@ function Media({
 }) {
   const [showMore, toggleShowMore] = React.useState(null)
   const lastReply = replies[replies.length - 1]
+  const [values, setValues] = React.useState({
+    multiline: '',
+  })
+
+  const handleChange = name => event => {
+    setValues({ ...values, [name]: event.target.value })
+  }
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <Grid container spacing={2}>
           <Grid item>
             <ButtonBase className={classes.image}>
+              <TimeAgo date={assertedTimestamp} />
               <img className={classes.img} alt="complex" src={`http://localhost:26835/${imageLink}`} />
               <Typography gutterBottom variant="subtitle1">{name}</Typography>
-              <TimeAgo date={assertedTimestamp} />
+              <span>{likesCount} Likes</span>
             </ButtonBase>
           </Grid>
           <div dangerouslySetInnerHTML={{__html: md.block(text, opts) }} className={classes.content}></div>
@@ -88,6 +97,19 @@ function Media({
             Show other {replies.length -1 } comments
           </Button>}
         </div>}
+        <TextField
+          id="outlined-multiline-flexible"
+          label="Post a reply"
+          multiline
+          rowsMax="4"
+          value={values.multiline}
+          onChange={handleChange('multiline')}
+          className={classes.textField}
+          margin="normal"
+          fullWidth
+          // helperText="Post a reply"
+          variant="outlined"
+        />
       </Paper>
     </div>
   )

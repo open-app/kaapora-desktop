@@ -21,9 +21,15 @@ const REPLICATION = gql`
   subscription {
     replication {
       rate
+      feeds
+      pendingPeers {
+        id
+        number
+      }
+      incompleteFeeds
       progress
       total
-    }
+    } 
   }
 `
 

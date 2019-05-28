@@ -1,7 +1,7 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+import React from 'react'
+import { makeStyles } from '@material-ui/core/styles'
+import Card from '@material-ui/core/Card'
+import CardContent from '@material-ui/core/CardContent'
 import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 
@@ -33,25 +33,25 @@ const useStyles = makeStyles(theme => ({
 
 
 function MediaControlCard({ gossip, replication, hidden }) {
-  const [peerList, updatePeers] = React.useState([]);
-  const exists = host => {
-    const list = peerList.filter(p => {
-      return p.peer.host === host
-    })
-    return list.length > 0
-  }
-  const update = () => {
-    let mutable = peerList
-    if (!exists(gossip.peer.host)) {
-      mutable.push(gossip)
-      updatePeers(mutable)
-    } else {
-      let newList = mutable.filter(p => p.peer.host !== gossip.peer.host)
-      newList.push(gossip)
-      updatePeers(newList)
-    }
-  }
+  const [peerList, updatePeers] = React.useState([])
   React.useEffect(() => {
+    const exists = host => {
+      const list = peerList.filter(p => {
+        return p.peer.host === host
+      })
+      return list.length > 0
+    }
+    const update = () => {
+      let mutable = peerList
+      if (!exists(gossip.peer.host)) {
+        mutable.push(gossip)
+        updatePeers(mutable)
+      } else {
+        let newList = mutable.filter(p => p.peer.host !== gossip.peer.host)
+        newList.push(gossip)
+        updatePeers(newList)
+      }
+    }
     if (gossip.type && Array.isArray(peerList)) {
       // console.log('GOSSIP', gossip.type, gossip.peer.host)
       update()
@@ -71,9 +71,9 @@ function MediaControlCard({ gossip, replication, hidden }) {
       //     break
       // }
     }
-  });
+  }, [gossip.type, peerList, gossip])
 
-  const classes = useStyles();
+  const classes = useStyles()
 
   return (
     <div style={{ display: hidden ? 'none' : 'block' }}>
@@ -110,7 +110,7 @@ function MediaControlCard({ gossip, replication, hidden }) {
         </Card>
       )}
     </div>
-  );
+  )
 }
 
-export default MediaControlCard;
+export default MediaControlCard

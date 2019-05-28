@@ -42,7 +42,7 @@ const opts = {
   // emoji: emojiAsMarkup => renderEmoji(emojiAsMarkup)
 }
 
-function Reply ({ classes, author: { name, imageLink }, text, assertedTimestamp }) {
+function Reply ({ classes, author: { name, imageLink }, likesCount, text, assertedTimestamp }) {
   return <Paper className={classes.paper}>
     <Grid container spacing={2}>
       <Grid item>
@@ -50,6 +50,7 @@ function Reply ({ classes, author: { name, imageLink }, text, assertedTimestamp 
         <ButtonBase className={classes.image}>
           <img className={classes.img} alt="complex" src={`http://localhost:26835/${imageLink}`} />
           <Typography gutterBottom variant="subtitle1">{name}</Typography>
+          <span>{likesCount} Likes</span>
         </ButtonBase>
       </Grid>
       <div dangerouslySetInnerHTML={{__html: md.block(text, opts) }} className={classes.content}></div>
