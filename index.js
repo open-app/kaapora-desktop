@@ -20,7 +20,11 @@ server([
 
 const appPath = process.env.DEV ? '/view/public' : '/view/build'
 
-var mb = menubar({ dir: __dirname + appPath })
+var mb = menubar({
+  dir: __dirname + appPath,
+  width: 800,
+  height: 800,
+})
 
 mb.on('ready', function ready () {
   console.log('app is ready')
