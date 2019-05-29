@@ -56,30 +56,31 @@ const AntTab = withStyles(theme => ({
   selected: {},
 }))(props => <Tab disableRipple {...props} />)
 
-function processIndex (process, indexing, updateProcess) {
-  return process({ variables: { chunkSize: 10e3 }})
+function processIndex (process, indexing, updateIndexing) {
+  process({ variables: { chunkSize: 10e3 }})
   .then(i => {
-    // console.log('Called', i)
     if (indexing.latestSequence !== i.data.process.latestSequence) {
-      updateProcess(Object.assign(i.data.process, { loading: true }))
+      updateIndexing(Object.assign(i.data.process, { loading: true }))
     } else {
-      updateProcess(Object.assign(i.data.process, { loading: false, error: true }))
+      console.log('PROCESS', i.data.process)
+      updateIndexing(Object.assign(i.data.process, { loading: false }))
     }
   })
   .catch(err => {
-    updateProcess({ loading: false, error: true })
     console.log('error on process', err)
+    updateIndexing({ loading: false, error: true })
   })
 }
 
 export default function Layout(props) {
   const { replication } = props
-  // const classes = useStyles()
-  const [replicating, updateReplication] = React.useState({ loading: false })
-  const [indexing, updateProcess] = React.useState({ loading: true })
+  // Incomming updates
+  const [incommingList, updateIncommingList] = React.useState({})
+
   // Replication
+  const [indexing, updateIndexing] = React.useState({ loading: true })
+  const [replicating, updateReplication] = React.useState({ loading: false })
   React.useEffect(() => {
-    // console.log('replicating', replicating)
     if (replication !== 'loading') {
       if (!replicating.loading && (!replication.progress || replication.progress !== replicating.progress)) {
         const newRep = Object.assign({ loading: true }, replication)
@@ -90,16 +91,16 @@ export default function Layout(props) {
         const newRep = Object.assign({ loading: false }, replication)
         // console.log('newRep 3', newRep)
         updateReplication(newRep)
-        processIndex(props.process, indexing, updateProcess)
+        processIndex(props.process, indexing, updateIndexing)
       }
     }
-  }, [updateReplication, replication, replicating, props, indexing, updateProcess])
+  }, [updateReplication, replication, replicating, props, indexing, updateIndexing])
   // PacthQL Indexing
   React.useEffect(() => {
     if (indexing.loading === true) {
-      processIndex(props.process, indexing, updateProcess)
+      processIndex(props.process, indexing, updateIndexing)
     }
-  }, [updateProcess, indexing, props])
+  }, [updateIndexing, indexing, props])
   // Tabs
   const [value, setValue] = React.useState(0)
   function handleChange(event, newValue) {
@@ -113,7 +114,7 @@ export default function Layout(props) {
       <LinearProgress
         value={indexing.loading ? null : 100 }
         variant={indexing.loading ? 'indeterminate' : 'determinate'}
-        color={indexing.error ? 'primary' : 'secondary'}
+        color={indexing.error ? 'secondary' : 'primary'}
       />
       <AppBar position="relative">
         <Toolbar>
@@ -124,11 +125,17 @@ export default function Layout(props) {
         </Toolbar>
       </AppBar>
       <AntTabs value={value} onChange={handleChange} variant="fullWidth">
-        <AntTab label="Posts" />
+        <AntTab label={`Posts ${incommingList.edges ? incommingList.edges.length : ''}`} />
         <AntTab label="Network" icon={replicating.loading ? <PhoneIcon /> : <HelpIcon />} />
       </AntTabs>
       <main>
-        <MediaList {...props} hidden={value === 1} />
+        <MediaList
+          {...props}
+          indexing={indexing}
+          updateIncommingList={updateIncommingList}
+          incommingList={incommingList}
+          hidden={value === 1}
+        />
         <Network {...props} hidden={value === 0} />
       </main>
     </React.Fragment>

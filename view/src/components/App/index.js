@@ -60,11 +60,11 @@ function App() {
                 // }}          
               >
                 {(process, { data: indexingData, loading: indexingLoading, error: indexingError }) => {
-                  const gossip = gossipData ? gossipData.gossip : (gossipLoading ? 'loading' : gossipError)
-                  const replication = replicationData ? replicationData.replication : (replicationLoading ? 'loading' : replicationError)
-                  // const indexing = indexingData ? indexingData.process : (indexingLoading ? 'loading' : indexingError)
-                  return <Layout gossip={gossip} replication={replication} process={process} />
-                }}
+                    const gossip = gossipData ? gossipData.gossip : (gossipLoading ? 'loading' : gossipError)
+                    const replication = replicationData ? replicationData.replication : (replicationLoading ? 'loading' : replicationError)
+                    // const indexing = indexingData ? indexingData.process : (indexingLoading ? 'loading' : indexingError)
+                    return <Layout gossip={gossip} replication={replication} process={process} />
+                  }}
               </Mutation>
             )}
           </Subscription>

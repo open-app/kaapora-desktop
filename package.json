@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "cd view && npm i",
     "dev": "concurrently 'cd view && npm start' 'DEV=true electron .'",
     "build": "electron-packager . Kaapora --platform=darwin --arch=x64 --version=0.36.0 --icon=Icon.icns",
     "start": "cd view && npm run build && cd .. && electron .",

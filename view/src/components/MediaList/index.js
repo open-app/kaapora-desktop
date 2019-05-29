@@ -1,4 +1,5 @@
 import React from 'react'
+import useInterval from '@use-hooks/interval';
 import PropTypes from 'prop-types'
 import { Query } from 'react-apollo'
 import gql from 'graphql-tag'
@@ -9,10 +10,7 @@ import Media from '../Media'
 import Fab from '@material-ui/core/Fab'
 import AddIcon from '@material-ui/icons/Add'
 import CreatePost from '../CreatePost'
-
-const options = {
-  throttle: 100,
-}
+import mergeArrays from '../../utils/mergeArrays'
 
 const THREADS = gql`
   query($after: String $before: String $first: Int) {
@@ -67,6 +65,10 @@ const THREADS = gql`
   }
 `
 
+const options = {
+  throttle: 100,
+}
+
 const styles = theme => ({
   root: {
     // display: 'flex',
@@ -94,12 +96,48 @@ const styles = theme => ({
   },
 })
 
-function List({ data, fetchMore, updateList, mediaList, loading, toggleLoading }) {
-  let position = useWindowScrollPosition(options)
+
+function List({ data,
+  fetchMore,
+  updateList,
+  mediaList,
+  loading,
+  toggleLoading,
+  indexing,
+  refetch,
+  updateIncommingList,
+  incommingList
+}) {
+  useInterval(() => {
+    if (indexing.loading) {
+      refetch()
+      .then(i => {
+        const newList = {
+          pageInfo: i.data.threads.pageInfo,
+          edges: incommingList.edges
+            ? mergeArrays(incommingList.edges, i.data.threads.edges)
+            : i.data.threads.edges,
+        }
+        if (Object.entries(mediaList).length === 0) {
+          updateList(newList)
+        } else {
+          updateIncommingList(newList)
+        }
+      })
+      .catch(err => console.log('Error on refetch ', err))
+    }
+  }, 3000)
+
+  // Initial Load
   React.useEffect(() => {
-    if (Object.entries(mediaList).length === 0 && mediaList.constructor === Object) {
+    if (Object.entries(mediaList).length === 0 || (mediaList.edges && mediaList.edges.length === 0)) {
       updateList(data)
     }
+  })
+
+  let position = useWindowScrollPosition(options)
+  React.useEffect(() => {
+    // If scroll to bottom fetchMore
     const hasNextPage = mediaList.pageInfo ? mediaList.pageInfo.hasNextPage : false
     if (hasNextPage && !loading && (position.y > 100) && (position.y > document.documentElement.offsetHeight-window.innerHeight - 30)) {
       toggleLoading(true)
@@ -117,20 +155,36 @@ function List({ data, fetchMore, updateList, mediaList, loading, toggleLoading }
       })
     }
   })
+  const [upperLoading, toggleUpperLoading] = React.useState(null)
+  const [hasScrolledDown, togglehasScrolledDown] = React.useState(false)
+  React.useEffect(() => {
+    // If scroll to top update UI
+    if (!hasScrolledDown && position.y > 250) {
+      togglehasScrolledDown(true)
+    }
+    else if (hasScrolledDown && incommingList.edges && position.y < 5) {
+      // toggleUpperLoading(true)
+      togglehasScrolledDown(false)
+      updateIncommingList({})
+      updateList({
+        pageInfo: incommingList.pageInfo,
+        edges: incommingList.edges.sort((a, b) => a.node.root.assertedTimestamp - b.node.root.assertedTimestamp).slice(incommingList.edges.length -1, 10)
+      })
+      console.log('gonna update')
+      // window.setTimeout(toggleUpperLoading(false), 2000)
+    }
+  }, [position.y, hasScrolledDown, incommingList, updateList, updateIncommingList, toggleUpperLoading])
   if (mediaList.edges) {
     return <div>
-      {mediaList.edges.map(media => <Media key={media.node.root.id} {...media.node.root} replies={media.node.replies} />)}
-      {loading && <CircularProgress />}
+      {!upperLoading && mediaList.edges.map(media => <Media key={media.node.root.id} {...media.node.root} replies={media.node.replies} />)}
+      {(loading || upperLoading) && <CircularProgress />}
     </div>
   } else return <CircularProgress />
 }
 
-function MediaList({ hidden, classes }) {
+function MediaList({ hidden, classes, indexing, updateIncommingList, incommingList }) {
   const [mediaList, updateList] = React.useState({})
   const [loading, updateLoading] = React.useState(null)
-  function toggleLoading(value) {
-    return updateLoading(value)
-  }
   const [open, setOpen] = React.useState(false)
   function handleOpen() {
     setOpen(true)
@@ -140,19 +194,21 @@ function MediaList({ hidden, classes }) {
     setOpen(false)
   }
 
-
-
   return (
-    <Query query={THREADS}>
+    <Query query={THREADS} partialRefetch>
       {({ data: threadsData, loading: threadsLoading, error: threadsError, fetchMore, refetch }) => (
         <div style={{ display: hidden ? 'none' : 'block' }}>
           {(threadsData && threadsData.threads) && <List
             fetchMore={fetchMore}
+            indexing={indexing}
+            refetch={refetch}
+            incommingList={incommingList}
+            updateIncommingList={updateIncommingList}
             data={threadsData.threads}
             updateList={updateList}
             mediaList={mediaList}
             loading={loading}
-            toggleLoading={toggleLoading}
+            toggleLoading={updateLoading}
           />}
           <Fab color="primary" aria-label="Add" className={classes.fab} onClick={handleOpen}>
             <AddIcon />
